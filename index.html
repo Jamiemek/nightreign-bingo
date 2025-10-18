@@ -26,7 +26,6 @@
     align-items: center;
   }
 
-  /* --- Ultra-thin title bar --- */
   header {
     width: 100%;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
@@ -34,12 +33,11 @@
     font-size: 1.1rem;
     font-weight: 600;
     text-align: center;
-    padding: 6px 0; /* thinner header */
+    padding: 6px 0;
     box-shadow: var(--shadow-deep);
     letter-spacing: 0.5px;
   }
 
-  /* --- Slim nav bar under title --- */
   nav {
     width: 100%;
     display: flex;
@@ -81,7 +79,6 @@
   }
   h1 { text-align: center; color: var(--accent-purple); margin-bottom: 24px; }
 
-  /* --- Bingo Grid --- */
   #bingo-board {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -122,10 +119,10 @@
     background: var(--accent-blue);
     color: var(--metal-silver);
     border: none;
-    padding: 12px 26px;
+    padding: 8px 18px;
     border-radius: 10px;
-    margin: 10px;
-    font-size: 1rem;
+    margin: 4px;
+    font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(75,108,183,0.4);
@@ -133,7 +130,6 @@
   }
   button:hover { background: var(--accent-purple); transform: translateY(-2px); }
 
-  /* --- Small restore button --- */
   #reset-defaults {
     position: absolute;
     top: 12px;
@@ -169,23 +165,25 @@
     transition: transform 0.2s;
   }
   #item-list li:hover { transform: translateX(4px); background: #282c34; }
-  #item-list input {
-    border: none;
-    background: transparent;
-    width: 80%;
+
+  #item-list .text {
+    flex-grow: 1;
     font-size: 0.9rem;
     color: var(--text-light);
-    outline: none;
+    word-wrap: break-word;
   }
-  #item-list button {
-    background: #bf3f3f;
-    color: var(--metal-silver);
-    font-size: 0.8rem;
-    padding: 6px 12px;
-    border: none;
+
+  #item-list input.edit-input {
+    flex-grow: 1;
+    background: #242830;
+    border: 1px solid #444;
+    color: var(--text-light);
     border-radius: 6px;
-    cursor: pointer;
+    padding: 6px;
+    margin-right: 10px;
+    font-size: 0.9rem;
   }
+
   #add-item {
     display: flex;
     justify-content: center;
@@ -213,7 +211,6 @@
 </nav>
 
 <main>
-  <!-- Bingo Page -->
   <section id="bingo-page" class="page active">
     <h1>Nightreign Bingo Board</h1>
     <div id="bingo-board"></div>
@@ -223,7 +220,6 @@
     </div>
   </section>
 
-  <!-- Edit List Page -->
   <section id="list-page" class="page">
     <button id="reset-defaults" title="Restore Default Challenges">♻</button>
     <h1>Edit Challenge List</h1>
@@ -237,134 +233,161 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-  const bingoPage = document.getElementById('bingo-page');
-  const listPage = document.getElementById('list-page');
-  const navBingo = document.getElementById('nav-bingo');
-  const navList = document.getElementById('nav-list');
-  const bingoBoard = document.getElementById('bingo-board');
-  const itemList = document.getElementById('item-list');
-  const newItemInput = document.getElementById('new-item');
-  const resetBtn = document.getElementById('reset-defaults');
+const bingoPage = document.getElementById('bingo-page');
+const listPage = document.getElementById('list-page');
+const navBingo = document.getElementById('nav-bingo');
+const navList = document.getElementById('nav-list');
+const bingoBoard = document.getElementById('bingo-board');
+const itemList = document.getElementById('item-list');
+const newItemInput = document.getElementById('new-item');
+const resetBtn = document.getElementById('reset-defaults');
 
-  const defaultItems = [
-    "No main-class weapon on final boss","Kill final boss with gray weapon","Fight two bosses together",
-    "Team uses same element","Kill Bell Bearing Hunter","Complete a special event","Don’t use Evergaol relic",
-    "Both choose same character","Replace starting weapon permanently","No map pings","No church flasks",
-    "Defeat two mounted bosses","Clear three ruins","3+ purple weapons by day 3","Clear outermost Evergaols",
-    "Kill two winged beasts","150K runes before Nightlord","Land crit from spirit spring","No relics equipped",
-    "Randomized characters","Skip normal night boss","Defeat 5 field bosses","Defeat 10 field bosses",
-    "Defeat 15 field bosses","Reach level 10 by night 1","No weapon affinities","No downs or near death",
-    "100% Shifting Earth Event","100% Castle enemy clears","Buy out merchant’s inventory","Die to a spectral bird",
-    "Equip 5 same armaments","Shield-only run","Lose level, don’t retrieve runes","Obtain 5 stonesword keys",
-    "Simultaneous crit on enemy","Solo castle roof boss","Solo Black Blade Kindred","Kill boss using pots only",
-    "Eat one of each bolus","Kill boss with wraith bell","Kill boss with its own weapon","Land 5 parries in a row",
-    "Kill boss fists only","Use heal-over-time flasks","Open 3 Evergaols, don’t clear"
-  ];
+const defaultItems = [
+  "No main-class weapon on final boss","Kill final boss with gray weapon","Fight two bosses together",
+  "Team uses same element","Kill Bell Bearing Hunter","Complete a special event","Don’t use Evergaol relic",
+  "Both choose same character","Replace starting weapon permanently","No map pings","No church flasks",
+  "Defeat two mounted bosses","Clear three ruins","3+ purple weapons by day 3","Clear outermost Evergaols",
+  "Kill two winged beasts","150K runes before Nightlord","Land crit from spirit spring","No relics equipped",
+  "Randomized characters","Skip normal night boss","Defeat 5 field bosses","Defeat 10 field bosses",
+  "Defeat 15 field bosses","Reach level 10 by night 1","No weapon affinities","No downs or near death",
+  "100% Shifting Earth Event","100% Castle enemy clears","Buy out merchant’s inventory","Die to a spectral bird",
+  "Equip 5 same armaments","Shield-only run","Lose level, don’t retrieve runes","Obtain 5 stonesword keys",
+  "Simultaneous crit on enemy","Solo castle roof boss","Solo Black Blade Kindred","Kill boss using pots only",
+  "Eat one of each bolus","Kill boss with wraith bell","Kill boss with its own weapon","Land 5 parries in a row",
+  "Kill boss fists only","Use heal-over-time flasks","Open 3 Evergaols, don’t clear"
+];
 
-  function getItems() {
-    return JSON.parse(localStorage.getItem('bingoItems') || JSON.stringify(defaultItems));
-  }
-  function saveItems(items) {
-    localStorage.setItem('bingoItems', JSON.stringify(items));
-  }
+function getItems() {
+  return JSON.parse(localStorage.getItem('bingoItems') || JSON.stringify(defaultItems));
+}
+function saveItems(items) {
+  localStorage.setItem('bingoItems', JSON.stringify(items));
+}
 
-  function renderList() {
-    const items = getItems();
-    itemList.innerHTML = '';
-    items.forEach((item, index) => {
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <input value="${item}" data-index="${index}">
-        <button data-index="${index}">🗑</button>
-      `;
-      itemList.appendChild(li);
-    });
-  }
-
-  function renderBingo() {
-    const items = [...getItems()];
-    if (items.length < 25) {
-      alert("You need at least 25 challenges to fill the board!");
-      return;
-    }
-    bingoBoard.innerHTML = '';
-    const selected = [];
-    while (selected.length < 25) {
-      const idx = Math.floor(Math.random() * items.length);
-      if (!selected.includes(items[idx])) selected.push(items[idx]);
-    }
-    selected.forEach(text => {
-      const cell = document.createElement('div');
-      cell.className = 'cell';
-      const span = document.createElement('span');
-      span.textContent = text;
-      cell.appendChild(span);
-      bingoBoard.appendChild(cell);
-    });
-  }
-
-  document.getElementById('generate').addEventListener('click', renderBingo);
-  document.getElementById('getpng').addEventListener('click', () => {
-    html2canvas(bingoBoard).then(canvas => {
-      const link = document.createElement('a');
-      link.download = 'nightreign-bingo.png';
-      link.href = canvas.toDataURL();
-      link.click();
-    });
+function renderList() {
+  const items = getItems();
+  itemList.innerHTML = '';
+  items.forEach((item, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <span class="text">${item}</span>
+      <div>
+        <button class="edit" data-index="${index}">✏️ Edit</button>
+        <button class="delete" data-index="${index}">🗑 Delete</button>
+      </div>
+    `;
+    itemList.appendChild(li);
   });
+}
 
-  document.getElementById('add-btn').addEventListener('click', () => {
-    const val = newItemInput.value.trim();
-    if (!val) return;
+function renderBingo() {
+  const items = [...getItems()];
+  if (items.length < 25) {
+    alert("You need at least 25 challenges to fill the board!");
+    return;
+  }
+  bingoBoard.innerHTML = '';
+  const selected = [];
+  while (selected.length < 25) {
+    const idx = Math.floor(Math.random() * items.length);
+    if (!selected.includes(items[idx])) selected.push(items[idx]);
+  }
+  selected.forEach(text => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const span = document.createElement('span');
+    span.textContent = text;
+    cell.appendChild(span);
+    bingoBoard.appendChild(cell);
+  });
+}
+
+itemList.addEventListener('click', e => {
+  if (e.target.classList.contains('delete')) {
     const items = getItems();
-    items.push(val);
+    items.splice(e.target.dataset.index, 1);
     saveItems(items);
-    newItemInput.value = '';
     renderList();
-  });
+  }
 
-  resetBtn.addEventListener('click', () => {
-    if (confirm("Restore default Nightreign challenges? This will remove your custom list.")) {
-      localStorage.removeItem('bingoItems');
-      renderList();
-      renderBingo();
-    }
-  });
+  if (e.target.classList.contains('edit')) {
+    const index = e.target.dataset.index;
+    const items = getItems();
+    const li = e.target.closest('li');
+    const textEl = li.querySelector('.text');
+    const editBtn = e.target;
 
-  itemList.addEventListener('input', e => {
-    if (e.target.tagName === 'INPUT') {
-      const items = getItems();
-      items[e.target.dataset.index] = e.target.value;
-      saveItems(items);
-    }
-  });
-  itemList.addEventListener('click', e => {
-    if (e.target.tagName === 'BUTTON') {
-      const items = getItems();
-      items.splice(e.target.dataset.index, 1);
+    // Replace text with input box
+    const input = document.createElement('input');
+    input.className = 'edit-input';
+    input.value = textEl.textContent;
+    li.replaceChild(input, textEl);
+    editBtn.textContent = '💾 Save';
+
+    input.focus();
+
+    const saveEdit = () => {
+      items[index] = input.value.trim() || 'Untitled Challenge';
       saveItems(items);
       renderList();
-    }
-  });
+    };
 
-  navBingo.addEventListener('click', () => {
-    listPage.classList.remove('active');
-    bingoPage.classList.add('active');
-    navList.classList.remove('active');
-    navBingo.classList.add('active');
+    editBtn.onclick = saveEdit;
+    input.addEventListener('keypress', ev => {
+      if (ev.key === 'Enter') saveEdit();
+    });
+  }
+});
+
+document.getElementById('generate').addEventListener('click', renderBingo);
+document.getElementById('getpng').addEventListener('click', () => {
+  html2canvas(bingoBoard).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'nightreign-bingo.png';
+    link.href = canvas.toDataURL();
+    link.click();
   });
-  navList.addEventListener('click', () => {
-    bingoPage.classList.remove('active');
-    listPage.classList.add('active');
-    navBingo.classList.remove('active');
-    navList.classList.add('active');
+});
+
+document.getElementById('add-btn').addEventListener('click', () => {
+  const val = newItemInput.value.trim();
+  if (!val) return;
+  const items = getItems();
+  items.push(val);
+  saveItems(items);
+  newItemInput.value = '';
+  renderList();
+});
+
+resetBtn.addEventListener('click', () => {
+  if (confirm("Restore default Nightreign challenges? This will remove your custom list.")) {
+    localStorage.removeItem('bingoItems');
     renderList();
-  });
+    renderBingo();
+  }
+});
 
-  renderBingo();
+navBingo.addEventListener('click', () => {
+  listPage.classList.remove('active');
+  bingoPage.classList.add('active');
+  navList.classList.remove('active');
+  navBingo.classList.add('active');
+});
+
+navList.addEventListener('click', () => {
+  bingoPage.classList.remove('active');
+  listPage.classList.add('active');
+  navBingo.classList.remove('active');
+  navList.classList.add('active');
+  renderList();
+});
+
+renderBingo();
 </script>
 </body>
 </html>
+
+
 
 
 
