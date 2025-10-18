@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nightreign Bingo Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dark-bg: #0b0d11;
+    --accent-blue: #4b6cb7;
+    --accent-purple: #7c4eff;
+    --metal-silver: #c2c6ca;
+    --card-bg: #1a1e24;
+    --text-light: #e3e6eb;
+    --shadow-deep: 0 8px 24px rgba(0,0,0,0.6);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--dark-bg);
+    color: var(--text-light);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* --- Ultra-thin title bar --- */
+  header {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: var(--metal-silver);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 0; /* thinner header */
+    box-shadow: var(--shadow-deep);
+    letter-spacing: 0.5px;
+  }
+
+  /* --- Slim nav bar under title --- */
+  nav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background: #121418;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 0;
+    gap: 20px;
+  }
+  nav a {
+    color: var(--metal-silver);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 18px;
+    border-radius: 6px;
+    transition: background 0.3s, color 0.3s;
+  }
+  nav a:hover, nav a.active {
+    background: rgba(124,78,255,0.15);
+    color: var(--accent-purple);
+  }
+
+  main {
+    width: 100%;
+    max-width: 900px;
+    margin: 25px auto;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-deep);
+    position: relative;
+  }
+
+  .page { display: none; animation: fadeIn 0.4s ease; }
+  .active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  h1 { text-align: center; color: var(--accent-purple); margin-bottom: 24px; }
+
+  /* --- Bingo Grid --- */
+  #bingo-board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+    border: 2px solid var(--accent-blue);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .cell {
+    background: #252a33;
+    border: 1px solid var(--accent-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-light);
+    font-weight: 600;
+    overflow: hidden;
+    padding: 10px;
+    transition: background 0.2s;
+  }
+  .cell:hover { background: #323845; }
+
+  .cell span {
+    display: block;
+    width: 95%;
+    text-align: center;
+    word-wrap: break-word;
+    font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+    line-height: 1.2;
+  }
+
+  button {
+    background: var(--accent-blue);
+    color: var(--metal-silver);
+    border: none;
+    padding: 12px 26px;
+    border-radius: 10px;
+    margin: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(75,108,183,0.4);
+    transition: transform 0.2s, background 0.3s;
+  }
+  button:hover { background: var(--accent-purple); transform: translateY(-2px); }
+
+  /* --- Small restore button --- */
+  #reset-defaults {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(124,78,255,0.2);
+    color: var(--metal-silver);
+    border: 1px solid rgba(124,78,255,0.3);
+    cursor: pointer;
+    box-shadow: none;
+    transition: background 0.3s;
+  }
+  #reset-defaults:hover { background: rgba(124,78,255,0.4); }
+
+  #item-list {
+    list-style: none;
+    padding: 0;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  #item-list li {
+    background: #1f2329;
+    border-left: 4px solid var(--accent-purple);
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-deep);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s;
+  }
+  #item-list li:hover { transform: translateX(4px); background: #282c34; }
+  #item-list input {
+    border: none;
+    background: transparent;
+    width: 80%;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    outline: none;
+  }
+  #item-list button {
+    background: #bf3f3f;
+    color: var(--metal-silver);
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #add-item {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+  }
+  #add-item input {
+    width: 280px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    margin-right: 10px;
+    font-size: 1rem;
+    background: #1e2127;
+    color: var(--text-light);
+  }
+</style>
+</head>
+<body>
+
+<header>🌒 Elden Ring: Nightreign Bingo</header>
+
+<nav>
+  <a href="#" id="nav-bingo" class="active">🎲 Bingo Board</a>
+  <a href="#" id="nav-list">📝 Edit List</a>
+</nav>
+
+<main>
+  <!-- Bingo Page -->
+  <section id="bingo-page" class="page active">
+    <h1>Nightreign Bingo Board</h1>
+    <div id="bingo-board"></div>
+    <div style="text-align:center;">
+      <button id="generate">🔁 Generate</button>
+      <button id="getpng">📸 Get PNG</button>
+    </div>
+  </section>
+
+  <!-- Edit List Page -->
+  <section id="list-page" class="page">
+    <button id="reset-defaults" title="Restore Default Challenges">♻</button>
+    <h1>Edit Challenge List</h1>
+    <ul id="item-list"></ul>
+    <div id="add-item">
+      <input type="text" id="new-item" placeholder="Add new challenge..." />
+      <button id="add-btn">➕ Add</button>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+  const bingoPage = document.getElementById('bingo-page');
+  const listPage = document.getElementById('list-page');
+  const navBingo = document.getElementById('nav-bingo');
+  const navList = document.getElementById('nav-list');
+  const bingoBoard = document.getElementById('bingo-board');
+  const itemList = document.getElementById('item-list');
+  const newItemInput = document.getElementById('new-item');
+  const resetBtn = document.getElementById('reset-defaults');
+
+  const defaultItems = [
+    "No main-class weapon on final boss","Kill final boss with gray weapon","Fight two bosses together",
+    "Team uses same element","Kill Bell Bearing Hunter","Complete a special event","Don’t use Evergaol relic",
+    "Both choose same character","Replace starting weapon permanently","No map pings","No church flasks",
+    "Defeat two mounted bosses","Clear three ruins","3+ purple weapons by day 3","Clear outermost Evergaols",
+    "Kill two winged beasts","150K runes before Nightlord","Land crit from spirit spring","No relics equipped",
+    "Randomized characters","Skip normal night boss","Defeat 5 field bosses","Defeat 10 field bosses",
+    "Defeat 15 field bosses","Reach level 10 by night 1","No weapon affinities","No downs or near death",
+    "100% Shifting Earth Event","100% Castle enemy clears","Buy out merchant’s inventory","Die to a spectral bird",
+    "Equip 5 same armaments","Shield-only run","Lose level, don’t retrieve runes","Obtain 5 stonesword keys",
+    "Simultaneous crit on enemy","Solo castle roof boss","Solo Black Blade Kindred","Kill boss using pots only",
+    "Eat one of each bolus","Kill boss with wraith bell","Kill boss with its own weapon","Land 5 parries in a row",
+    "Kill boss fists only","Use heal-over-time flasks","Open 3 Evergaols, don’t clear"
+  ];
+
+  function getItems() {
+    return JSON.parse(localStorage.getItem('bingoItems') || JSON.stringify(defaultItems));
+  }
+  function saveItems(items) {
+    localStorage.setItem('bingoItems', JSON.stringify(items));
+  }
+
+  function renderList() {
+    const items = getItems();
+    itemList.innerHTML = '';
+    items.forEach((item, index) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <input value="${item}" data-index="${index}">
+        <button data-index="${index}">🗑</button>
+      `;
+      itemList.appendChild(li);
+    });
+  }
+
+  function renderBingo() {
+    const items = [...getItems()];
+    if (items.length < 25) {
+      alert("You need at least 25 challenges to fill the board!");
+      return;
+    }
+    bingoBoard.innerHTML = '';
+    const selected = [];
+    while (selected.length < 25) {
+      const idx = Math.floor(Math.random() * items.length);
+      if (!selected.includes(items[idx])) selected.push(items[idx]);
+    }
+    selected.forEach(text => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const span = document.createElement('span');
+      span.textContent = text;
+      cell.appendChild(span);
+      bingoBoard.appendChild(cell);
+    });
+  }
+
+  document.getElementById('generate').addEventListener('click', renderBingo);
+  document.getElementById('getpng').addEventListener('click', () => {
+    html2canvas(bingoBoard).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'nightreign-bingo.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+  });
+
+  document.getElementById('add-btn').addEventListener('click', () => {
+    const val = newItemInput.value.trim();
+    if (!val) return;
+    const items = getItems();
+    items.push(val);
+    saveItems(items);
+    newItemInput.value = '';
+    renderList();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    if (confirm("Restore default Nightreign challenges? This will remove your custom list.")) {
+      localStorage.removeItem('bingoItems');
+      renderList();
+      renderBingo();
+    }
+  });
+
+  itemList.addEventListener('input', e => {
+    if (e.target.tagName === 'INPUT') {
+      const items = getItems();
+      items[e.target.dataset.index] = e.target.value;
+      saveItems(items);
+    }
+  });
+  itemList.addEventListener('click', e => {
+    if (e.target.tagName === 'BUTTON') {
+      const items = getItems();
+      items.splice(e.target.dataset.index, 1);
+      saveItems(items);
+      renderList();
+    }
+  });
+
+  navBingo.addEventListener('click', () => {
+    listPage.classList.remove('active');
+    bingoPage.classList.add('active');
+    navList.classList.remove('active');
+    navBingo.classList.add('active');
+  });
+  navList.addEventListener('click', () => {
+    bingoPage.classList.remove('active');
+    listPage.classList.add('active');
+    navBingo.classList.remove('active');
+    navList.classList.add('active');
+    renderList();
+  });
+
+  renderBingo();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
